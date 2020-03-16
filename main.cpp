@@ -2,123 +2,79 @@
 #include <memory>
 #include <any>
 #include <chrono>
+#include <type_traits>
 using namespace std;
 using namespace chrono;
-class DisVar {
+class DisVar1 {
+private:
+    void* val{};
+    char type{};
 public:
-    union valSet{
-        unique_ptr<long long int> Ival;
-        unique_ptr<long double> Dval;
-        unique_ptr<string> Sval;
-        ~valSet(){};
-        valSet(){};
-        valSet(valSet const &var){
-            if(var.Ival){
-                long long int i=*var.Ival;
-                Ival=make_unique<long long int>(i);
-            }
-            else if(var.Dval){
-                long double d=*var.Dval;
-                Dval=make_unique<long double>(d);
-            }
-            else if(var.Sval){
-                string s=*var.Sval;
-                Sval=make_unique<string>(s);
-            }
-        };
-        valSet& operator=(valSet const &var){};
-    }s;
-    DisVar(){
-        s.Ival=nullptr;
+    inline DisVar1(){
+        val=nullptr;
+    };
+    template <typename t>
+    inline explicit DisVar1(t a) {
+        val=new t(a);
+        if(typeid(a)==typeid(int))
+            type='i';
+        else if(typeid(a)==typeid(double))
+            type='d';
+        else if(typeid(a)==typeid(string))
+            type='s';
     }
-    explicit DisVar(long long int a) {
-        s.Ival=make_unique<long long int>(a);
-    }
-    explicit DisVar(long int a) {
-        s.Ival=make_unique<long long int>(a);
-    }
-    explicit DisVar(int a) {
-        s.Ival=make_unique<long long int>(a);
-    }
-    explicit DisVar(double a) {
-        s.Dval=make_unique<long double>(a);
-    }
-    explicit DisVar(long double a) {
-        s.Dval=make_unique<long double>(a);
-    }
-
-    explicit DisVar(string a) {
-        s.Sval=make_unique<string>(a);
-    }
-    DisVar operator+(DisVar a){
-      //  cout<<"adding"<<endl;
-        char b=this->type();
-        if(b!=a.type())
-            return DisVar();
+    DisVar1 operator+(DisVar1 a){
+        char b=this->type;
+        if(b!=a.type)
+            return DisVar1();
         else{
-            if(this->s.Ival)
-                return DisVar(*this->s.Ival+*a.s.Ival);
-            else if(this->s.Dval)
-                return DisVar(*this->s.Dval+*a.s.Dval);
-            else if(this->s.Sval)
-                return DisVar(*this->s.Sval+*a.s.Sval);
+            switch (b){
+                case 'i':
+                    return DisVar1(*(int*)this->val+*(int*)(a.val));
+                case 'd':
+                    return DisVar1(*(double*)this->val+*(double*)(a.val));
+                case 's':
+                    return DisVar1(*(string*)this->val+*(string*)(a.val));
+            }
         }
-            
     }
-    char type(){
-        if(s.Ival)
-            return 'i';
-        else if(s.Dval)
-            return 'd';
-        else if(s.Sval)
-            return 's';
+    inline string value(){
+        if(this->type=='i')
+            return to_string(*(int*)this->val);
+        else if(this->type=='d')
+            return to_string(*(double*)this->val);
+        else if(this->type=='s')
+            return *(string*)this->val;
     }
-    string value(){
-        char b=this->type();
-        if(b=='i')
-            return to_string(*this->s.Ival);
-        if(b=='d')
-            return to_string(*this->s.Dval);
-        if(b=='s')
-            return *this->s.Sval;
-    }
-
 };
-string value(DisVar &a){
-    char b=a.type();
-    if(b=='i')
-        return to_string(*a.s.Ival);
-    if(b=='d')
-        return to_string(*a.s.Dval);
-    if(b=='s')
-        return *a.s.Sval;
-}
-
 int main() {
     //ptr class solution
+    /*
     DisVar test=DisVar(3467865);
     DisVar test1(3467865);
     DisVar testd=DisVar(15.237896531246890);
-   // DisVar tests=DisVar("string");
-   // std::cout << sizeof(tests) << std::endl;
-
+    DisVar tests=DisVar("string");
+    std::cout << sizeof(tests) << std::endl;
+    */
 
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    DisVar x;
-    for(int c=1; c<1000000; c++) {
+    DisVar1 x;
+    DisVar1 test(245678);
+    DisVar1 test1(345675843);
+    for(int c=0; c<10000000; c++) {
         x=test+test1;
     }
-    cout<<x.value()<<endl;
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    cout<<x.value()<<endl;
     duration time_span = duration_cast<duration<double>>(t2 - t1);
     std::cout << time_span.count() << endl;
 
     t1 = high_resolution_clock::now();
-    int *fg=new int;
-    for(int c=1; c<1000000; c++) {
-        *fg=3467865+3467865;
+    int fg;
+    for(int c=0; c<10000000; c++) {
+        fg=345675843+245678;
     }
-    cout<<*fg<<endl;
+    cout<<fg<<endl;
     t2 = high_resolution_clock::now();
     time_span = duration_cast<duration<double>>(t2 - t1);
     std::cout << time_span.count() << endl;
