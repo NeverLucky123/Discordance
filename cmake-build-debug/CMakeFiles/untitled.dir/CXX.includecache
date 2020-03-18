@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/henry/CLionProjects/untitled/Discordance/main.cpp
+C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h
 iostream
 -
 memory
@@ -17,4 +17,8 @@ utility
 -
 string_view
 -
+
+C:/Users/henry/CLionProjects/untitled/Discordance/main.cpp
+DisVar.h
+C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h
 
