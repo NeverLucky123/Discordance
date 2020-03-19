@@ -1,9 +1,12 @@
 #include "DisVar.h"
 
 int main() {
-DisVar x{1}, y{5.45678},z{2};
-x=y+z;
+DisVar x{"sh"}, y{5.45678},z{2};
+x=x+"gh";
+y=&x;
+DisVar f;
 cout<<x.value()<<endl;
+//cout<<sizeof(f)<<endl;
 /*
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
     DisVar test("Hahaalmaolmao");

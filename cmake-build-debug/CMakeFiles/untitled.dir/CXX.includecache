@@ -17,6 +17,8 @@ utility
 -
 string_view
 -
+typeinfo
+-
 
 C:/Users/henry/CLionProjects/untitled/Discordance/main.cpp
 DisVar.h
