@@ -1,11 +1,10 @@
 #include "DisVar.h"
 
 int main() {
-DisVar x{"sh"}, y{5.45678},z{2};
-x=x+"gh";
-y=&x;
-DisVar f;
-cout<<x.value()<<endl;
+DisVar x{true}, y{-5.45678},z{2};
+x=(y+z)/x;//DisVar f;
+bool a= true;
+string c="hello";
 //cout<<sizeof(f)<<endl;
 /*
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
