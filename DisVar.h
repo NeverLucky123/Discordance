@@ -97,7 +97,7 @@ public:
     };
 
     template<typename t>
-    DisVar &operator+(t a) const {
+    DisVar &operator+(t a){
         switch (this->Type) {
             case Integer:
                 switch (varType(a)) {
@@ -139,12 +139,12 @@ public:
                     case Untype:
                         return *new DisVar();
                 }
-            case String:
             case Untype:
                 return *new DisVar();
         }
     }
-    DisVar &operator+(const string& a) const {
+    template<>
+    DisVar &operator+(const string &a) {
         switch (this->Type) {
             case String:
                 switch (varType(a)) {
