@@ -10,9 +10,7 @@
 using namespace std;
 using namespace chrono;
 
-enum type {
-    Bool, Integer, Long, LL, Double, LD, String, Untype
-};
+/*
 template<typename t>
 type varType(t a) {
     if (typeid(a) == typeid(int))
@@ -30,9 +28,12 @@ type varType(t a) {
     else
         return Untype;
 }
-
+*/
 class DisVar {
 private:
+    enum type {
+        Bool, Integer, Long, LL, Double, LD, String, Untype
+    };
     void *val{};
     type Type{};
 public:
@@ -54,8 +55,37 @@ public:
 
     inline explicit DisVar(string a) : Type(type::String), val(new string(std::move(a))) {};
 
-    //conversion operations
+    //copy constructor
+    inline DisVar(const DisVar &other) : Type(other.Type), val(nullptr) {
+        switch (other.Type) {
+            case Bool:
+                this->val = new bool(*reinterpret_cast<bool *>(other.val));
+                break;
+            case Integer:
+                this->val = new int(*reinterpret_cast<int *>(other.val));
+                break;
+            case Long:
+                this->val = new long(*reinterpret_cast<long *>(other.val));
+                break;
+            case LL:
+                this->val = new long long(*reinterpret_cast<long long *>(other.val));
+                break;
+            case Double:
+                this->val = new double(*reinterpret_cast<double *>(other.val));
+                break;
+            case LD:
+                this->val = new long double(*reinterpret_cast<long double *>(other.val));
+                break;
+            case String:
+                this->val = new string(*reinterpret_cast<string *>(other.val));
+                break;
+            case Untype:
+                this->val = nullptr;
+                break;
+        }
+    };
 
+    //conversion operations
     inline DisVar &operator=(bool a) {
         this->val = new bool(a);
         Type = Bool;
@@ -98,35 +128,22 @@ public:
         return *this;
     };
 
+    inline DisVar &operator=(const DisVar &a) {
+        DisVar tmp(a);
+        swap(val, tmp.val);
+        swap(Type, tmp.Type);
+        return *this;
+    };
+
+    /*
     template<typename t>
     inline DisVar &operator=(t a) {
+        cout<<"anon"<<endl;
         this->val = new t(a);
         Type = Untype;
         return *this;
     };
-
-    //copy constructor
-    inline DisVar(const DisVar &other) : Type(other.Type), val(nullptr) {
-        switch (other.Type) {
-            case Bool:
-                this->val = new bool(*reinterpret_cast<bool *>(other.val));
-            case Integer:
-                this->val = new int(*reinterpret_cast<int *>(other.val));
-            case Long:
-                this->val = new long(*reinterpret_cast<long *>(other.val));
-            case LL:
-                this->val = new long long(*reinterpret_cast<long long *>(other.val));
-            case Double:
-                this->val = new double(*reinterpret_cast<double *>(other.val));
-            case LD:
-                this->val = new long double(*reinterpret_cast<long double *>(other.val));
-            case String:
-                this->val = new string(*reinterpret_cast<string *>(other.val));
-            case Untype:
-                this->val = nullptr;
-        }
-    };
-
+*/
     //destructor
     inline ~DisVar() {
         free(val);
@@ -145,7 +162,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -194,7 +212,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) + *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -234,7 +253,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) + *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) + *reinterpret_cast<int *>(a.val));
@@ -265,6 +285,161 @@ public:
         }
     }
 
+//work in progress
+    DisVar &operator+=(const DisVar &a) {
+        switch (this->Type) {
+            case Bool:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<bool *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case Integer:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<int *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case Long:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<long *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case LL:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<long long *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case Double:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<double *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case LD:
+                switch (a.Type) {
+                    case Bool:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<bool *>(a.val));
+                        return *this;
+                    case Integer:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<int *>(a.val));
+                        return *this;
+                    case Long:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<long *>(a.val));
+                        return *this;
+                    case LL:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<long long *>(a.val));
+                        return *this;
+                    case Double:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<double *>(a.val));
+                        return *this;
+                    case LD:
+                        *this =DisVar(*reinterpret_cast<long double *>(this->val) + *reinterpret_cast<long double *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            case String:
+                switch (a.Type) {
+                    case String:
+                        *this =DisVar(*reinterpret_cast<string *>(this->val) + *reinterpret_cast<string *>(a.val));
+                        return *this;
+                    default:
+                        *this = DisVar();
+                }
+            default:
+                *this = DisVar();
+        }
+    }
+
+
     DisVar &operator-(const DisVar &a) const {
         switch (this->Type) {
             default:
@@ -278,7 +453,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) - *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) - *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) - *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) - *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -314,18 +490,21 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<long *>(this->val) - *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) - *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long *>(this->val) - *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<long *>(this->val) - *reinterpret_cast<double *>(a.val));
                     case LD:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) - *reinterpret_cast<long double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long *>(this->val) - *reinterpret_cast<long double *>(a.val));
                     default:
                         return *new DisVar();
                 }
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) - *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) - *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) - *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -365,7 +544,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) - *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) - *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) - *reinterpret_cast<int *>(a.val));
@@ -425,7 +605,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) * *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) * *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) * *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) * *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -474,7 +655,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) * *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) * *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) * *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -514,7 +696,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) * *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) * *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) * *reinterpret_cast<int *>(a.val));
@@ -573,7 +756,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -622,7 +806,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) / *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) / *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) / *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -662,7 +847,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) / *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<int *>(a.val));
@@ -714,7 +900,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) % *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) % *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) % *reinterpret_cast<long long *>(a.val));
                     default:
                         return *new DisVar();
                 }
@@ -748,7 +935,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) % *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) % *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) % *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -776,7 +964,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) > *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) > *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) > *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) > *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -825,7 +1014,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) > *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) > *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) > *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -865,7 +1055,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) > *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) > *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) > *reinterpret_cast<int *>(a.val));
@@ -900,7 +1091,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) < *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) < *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) < *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) < *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -949,7 +1141,8 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) < *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) < *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(*reinterpret_cast<long long *>(this->val) < *reinterpret_cast<int *>(a.val));
                     case Long:
@@ -989,7 +1182,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) < *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) < *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) < *reinterpret_cast<int *>(a.val));
@@ -1024,7 +1218,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) >= *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) >= *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) >= *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) >= *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1042,7 +1237,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) >= *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) >= *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) >= *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) >= *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1073,9 +1269,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) >= *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) >= *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) >= *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) >= *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) >= *reinterpret_cast<long *>(a.val));
@@ -1103,7 +1301,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) >= *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) >= *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) >= *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) >= *reinterpret_cast<long double *>(a.val));
@@ -1113,7 +1312,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) >= *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) >= *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) >= *reinterpret_cast<int *>(a.val));
@@ -1148,7 +1348,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) <= *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) <= *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) <= *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) <= *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1166,7 +1367,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) <= *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) <= *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) <= *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) <= *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1197,9 +1399,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) <= *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) <= *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) <= *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) <= *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) <= *reinterpret_cast<long *>(a.val));
@@ -1227,7 +1431,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) <= *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) <= *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) <= *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) <= *reinterpret_cast<long double *>(a.val));
@@ -1237,7 +1442,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) <= *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) <= *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) <= *reinterpret_cast<int *>(a.val));
@@ -1272,7 +1478,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) == *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) == *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) == *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) == *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1290,7 +1497,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) == *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) == *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) == *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) == *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1321,9 +1529,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) == *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) == *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) == *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) == *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) == *reinterpret_cast<long *>(a.val));
@@ -1351,7 +1561,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) == *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) == *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) == *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) == *reinterpret_cast<long double *>(a.val));
@@ -1361,7 +1572,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) == *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) == *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) == *reinterpret_cast<int *>(a.val));
@@ -1385,134 +1597,11 @@ public:
                     default:
                         return *new DisVar();
                     case String:
-                        return *new DisVar(*reinterpret_cast<string *>(this->val) == *reinterpret_cast<string *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<string *>(this->val) == *reinterpret_cast<string *>(a.val));
                 }
         }
     }
-
-  /*  DisVar &operator/(const DisVar &a) const {
-        switch (this->Type) {
-            default:
-                return *new DisVar();
-            case Bool:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<bool *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-            case Integer:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<int *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-            case Long:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(
-                                *reinterpret_cast<long *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(*reinterpret_cast<long *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<long *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-            case LL:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(
-                                *reinterpret_cast<long long *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(
-                                *reinterpret_cast<long long *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(
-                                *reinterpret_cast<long long *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<long long *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-            case Double:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(
-                                *reinterpret_cast<double *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<double *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-            case LD:
-                switch (a.Type) {
-                    case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) / *reinterpret_cast<bool *>(a.val));
-                    case Integer:
-                        return *new DisVar(
-                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<int *>(a.val));
-                    case Long:
-                        return *new DisVar(
-                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<long *>(a.val));
-                    case LL:
-                        return *new DisVar(
-                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<long long *>(a.val));
-                    case Double:
-                        return *new DisVar(
-                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<double *>(a.val));
-                    case LD:
-                        return *new DisVar(
-                                *reinterpret_cast<long double *>(this->val) / *reinterpret_cast<long double *>(a.val));
-                    default:
-                        return *new DisVar();
-                }
-        }
-    }*/
 
     DisVar &operator&&(const DisVar &a) const {
         switch (this->Type) {
@@ -1527,7 +1616,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) && *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) && *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) && *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) && *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1545,7 +1635,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) && *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) && *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) && *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) && *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1576,9 +1667,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) && *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) && *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) && *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) && *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) && *reinterpret_cast<long *>(a.val));
@@ -1606,7 +1699,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) && *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) && *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) && *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) && *reinterpret_cast<long double *>(a.val));
@@ -1616,7 +1710,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) && *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) && *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) && *reinterpret_cast<int *>(a.val));
@@ -1651,7 +1746,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) || *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) || *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) || *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) || *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1669,7 +1765,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) || *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) || *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) || *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) || *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1700,9 +1797,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) || *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) || *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) || *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) || *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) || *reinterpret_cast<long *>(a.val));
@@ -1730,7 +1829,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) || *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) || *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) || *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) || *reinterpret_cast<long double *>(a.val));
@@ -1740,7 +1840,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) || *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) || *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) || *reinterpret_cast<int *>(a.val));
@@ -1775,7 +1876,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) != *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<bool *>(this->val) != *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<bool *>(this->val) != *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<bool *>(this->val) != *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1793,7 +1895,8 @@ public:
                     case Long:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) != *reinterpret_cast<long *>(a.val));
                     case LL:
-                        return *new DisVar(*reinterpret_cast<int *>(this->val) != *reinterpret_cast<long long *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<int *>(this->val) != *reinterpret_cast<long long *>(a.val));
                     case Double:
                         return *new DisVar(*reinterpret_cast<int *>(this->val) != *reinterpret_cast<double *>(a.val));
                     case LD:
@@ -1824,9 +1927,11 @@ public:
             case LL:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) != *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) != *reinterpret_cast<bool *>(a.val));
                     case Integer:
-                        return *new DisVar(*reinterpret_cast<long long *>(this->val) != *reinterpret_cast<int *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long long *>(this->val) != *reinterpret_cast<int *>(a.val));
                     case Long:
                         return *new DisVar(
                                 *reinterpret_cast<long long *>(this->val) != *reinterpret_cast<long *>(a.val));
@@ -1854,7 +1959,8 @@ public:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) != *reinterpret_cast<long long *>(a.val));
                     case Double:
-                        return *new DisVar(*reinterpret_cast<double *>(this->val) != *reinterpret_cast<double *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<double *>(this->val) != *reinterpret_cast<double *>(a.val));
                     case LD:
                         return *new DisVar(
                                 *reinterpret_cast<double *>(this->val) != *reinterpret_cast<long double *>(a.val));
@@ -1864,7 +1970,8 @@ public:
             case LD:
                 switch (a.Type) {
                     case Bool:
-                        return *new DisVar(*reinterpret_cast<long double *>(this->val) != *reinterpret_cast<bool *>(a.val));
+                        return *new DisVar(
+                                *reinterpret_cast<long double *>(this->val) != *reinterpret_cast<bool *>(a.val));
                     case Integer:
                         return *new DisVar(
                                 *reinterpret_cast<long double *>(this->val) != *reinterpret_cast<int *>(a.val));
@@ -1885,7 +1992,6 @@ public:
                 }
         }
     }
-
 
 
     [[nodiscard]] inline string value() const {
@@ -1909,27 +2015,27 @@ public:
         }
     }
 
-    inline explicit operator short int() const{
-        switch(Type){
+    inline explicit operator short int() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<short int>(*reinterpret_cast<bool*>(val));
+                return static_cast<short int>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<short int>(*reinterpret_cast<int*>(val));
+                return static_cast<short int>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<short int>(*reinterpret_cast<long*>(val));
+                return static_cast<short int>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<short int>(*reinterpret_cast<long long*>(val));
+                return static_cast<short int>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<short int>(*reinterpret_cast<double*>(val));
+                return static_cast<short int>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<short int>(*reinterpret_cast<long double*>(val));
+                return static_cast<short int>(*reinterpret_cast<long double *>(val));
         }
     }
 
-    inline explicit operator bool() const{
-        switch(Type) {
+    inline explicit operator bool() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
@@ -1946,120 +2052,127 @@ public:
                 return static_cast<bool>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator int() const{
-        switch(Type){
+
+    inline explicit operator int() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<int>(*reinterpret_cast<bool*>(val));
+                return static_cast<int>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<int>(*reinterpret_cast<int*>(val));
+                return static_cast<int>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<int>(*reinterpret_cast<long*>(val));
+                return static_cast<int>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<int>(*reinterpret_cast<long long*>(val));
+                return static_cast<int>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<int>(*reinterpret_cast<double*>(val));
+                return static_cast<int>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<int>(*reinterpret_cast<long double*>(val));
+                return static_cast<int>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator long() const{
-        switch(Type){
+
+    inline explicit operator long() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<long>(*reinterpret_cast<bool*>(val));
+                return static_cast<long>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<long>(*reinterpret_cast<int*>(val));
+                return static_cast<long>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<long>(*reinterpret_cast<long*>(val));
+                return static_cast<long>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<long>(*reinterpret_cast<long long*>(val));
+                return static_cast<long>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<long>(*reinterpret_cast<double*>(val));
+                return static_cast<long>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<long>(*reinterpret_cast<long double*>(val));
+                return static_cast<long>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator long long () const{
-        switch(Type){
+
+    inline explicit operator long long() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<long long>(*reinterpret_cast<bool*>(val));
+                return static_cast<long long>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<long long>(*reinterpret_cast<int*>(val));
+                return static_cast<long long>(*reinterpret_cast<int *>(val));
             case Long:
                 return static_cast<long long>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<long long>(*reinterpret_cast<long long*>(val));
+                return static_cast<long long>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<long long>(*reinterpret_cast<double*>(val));
+                return static_cast<long long>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<long long>(*reinterpret_cast<long double*>(val));
+                return static_cast<long long>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator float () const{
-        switch(Type){
+
+    inline explicit operator float() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<float>(*reinterpret_cast<bool*>(val));
+                return static_cast<float>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<float>(*reinterpret_cast<int*>(val));
+                return static_cast<float>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<float>(*reinterpret_cast<long*>(val));
+                return static_cast<float>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<float>(*reinterpret_cast<long long*>(val));
+                return static_cast<float>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<float>(*reinterpret_cast<double*>(val));
+                return static_cast<float>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<float>(*reinterpret_cast<long double*>(val));
+                return static_cast<float>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator double () const{
-        switch(Type){
+
+    inline explicit operator double() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<double>(*reinterpret_cast<bool*>(val));
+                return static_cast<double>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<double>(*reinterpret_cast<int*>(val));
+                return static_cast<double>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<double>(*reinterpret_cast<long*>(val));
+                return static_cast<double>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<double>(*reinterpret_cast<long long*>(val));
+                return static_cast<double>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<double>(*reinterpret_cast<double*>(val));
+                return static_cast<double>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<double>(*reinterpret_cast<long double*>(val));
+                return static_cast<double>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator long double () const{
-        switch(Type){
+
+    inline explicit operator long double() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case Bool:
-                return static_cast<long double>(*reinterpret_cast<bool*>(val));
+                return static_cast<long double>(*reinterpret_cast<bool *>(val));
             case Integer:
-                return static_cast<long double>(*reinterpret_cast<int*>(val));
+                return static_cast<long double>(*reinterpret_cast<int *>(val));
             case Long:
-                return static_cast<long double>(*reinterpret_cast<long*>(val));
+                return static_cast<long double>(*reinterpret_cast<long *>(val));
             case LL:
-                return static_cast<long double>(*reinterpret_cast<long long*>(val));
+                return static_cast<long double>(*reinterpret_cast<long long *>(val));
             case Double:
-                return static_cast<long double>(*reinterpret_cast<double*>(val));
+                return static_cast<long double>(*reinterpret_cast<double *>(val));
             case LD:
-                return static_cast<long double>(*reinterpret_cast<long double*>(val));
+                return static_cast<long double>(*reinterpret_cast<long double *>(val));
         }
     }
-    inline explicit operator string () const{
-        switch(Type){
+
+    inline explicit operator string() const {
+        switch (Type) {
             default:
                 throw bad_cast();
             case String:
-                return *reinterpret_cast<string*>(val);
+                return *reinterpret_cast<string *>(val);
         }
     }
 

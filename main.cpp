@@ -1,10 +1,9 @@
 #include "DisVar.h"
 
 int main() {
-DisVar x{true}, y{-5.45678},z{2};
-x=(y+z)/x;//DisVar f;
-bool a= true;
-string c="hello";
+DisVar x{"asdhjk"}, y{"asdhjk"},z{2};
+x+=y;//DisVar f;
+cout<<x.value();
 //cout<<sizeof(f)<<endl;
 /*
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
