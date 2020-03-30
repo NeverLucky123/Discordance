@@ -7,25 +7,15 @@
 #include <iostream>
 using namespace std;
 
-/*
-template<typename t>
-type varType(t a) {
-    if (typeid(a) == typeid(int))
-        return Integer;
-    else if (typeid(a) == typeid(long))
-        return Long;
-    else if (typeid(a) == typeid(long long))
-        return LL;
-    else if (typeid(a) == typeid(double))
-        return Double;
-    else if (typeid(a) == typeid(long double))
-        return LD;
-    else if (typeid(a).name() == typeid(string).name())
-        return String;
-    else
-        return Untype;
-}
-*/
+class base{
+public:
+    virtual string _class_name_()=0;
+};
+class test1: base{
+public:
+    int apple=1;
+    string name="test1";
+};
 class DisVar {
 private:
     void *val{};
@@ -2551,29 +2541,68 @@ public:
         }
     }
 
-    [[nodiscard]] inline string value() const {
-        switch (this->Type) {
+    friend ostream& operator <<(ostream &output, const DisVar &x){
+        switch (x.Type) {
             case Bool:
-                return to_string(*reinterpret_cast<bool *>(this->val));
+                return output<<to_string(*reinterpret_cast<bool *>(x.val));
             case Integer:
-                return to_string(*reinterpret_cast<int *>(this->val));
+                return output<<to_string(*reinterpret_cast<int *>(x.val));
             case Long:
-                return to_string(*reinterpret_cast<long *>(this->val));
+                return output<<to_string(*reinterpret_cast<long *>(x.val));
             case LL:
-                return to_string(*reinterpret_cast<long long *>(this->val));
+                return output<<to_string(*reinterpret_cast<long long *>(x.val));
             case Double:
-                return to_string(*reinterpret_cast<double *>(this->val));
+                return output<<to_string(*reinterpret_cast<double *>(x.val));
             case LD:
-                return to_string(*reinterpret_cast<long double *>(this->val));
+                return output<<to_string(*reinterpret_cast<long double *>(x.val));
             case String:
-                return *reinterpret_cast<string *>(this->val);
+                return output<<*reinterpret_cast<string *>(x.val);
             case Untype:
-                return "Untype";
+                return output<<"Untype";
         }
     }
 
-    //explicit casting operators
-    inline explicit operator short int() const {
+    friend istream &operator>>( istream  &input, DisVar &x ) {
+        string value;
+        input>>value;
+        bool isint = true, isfloat=true;
+        try{
+            if(value!=to_string(stoll(value))){
+                isint=false;
+            }
+        } catch(std::invalid_argument){
+            isint=false;
+        }
+        try {
+            if (value != to_string(stold(value))) {
+                isfloat = false;
+            }
+        } catch(std::invalid_argument){
+            isfloat=false;
+        }
+        if(isint){
+            x=stoll(value);
+        }
+        else if(isfloat){
+            x=stold(value);
+        }
+        else{
+            x=value;
+        }
+        return input;
+    }
+
+    [[nodiscard]] inline auto length() const{
+        switch(this->Type){
+            case String:
+                return * new DisVar((int)reinterpret_cast<string *>(this->val)->length());
+            default:
+                return * new DisVar();
+        }
+    }
+
+    //implicit casting operators
+    inline operator short() const {
         switch (Type) {
             default:
                 throw bad_cast();
@@ -2611,7 +2640,7 @@ public:
         }
     }
 
-    inline explicit operator int() const {
+    inline  operator int() const {
         switch (Type) {
             default:
                 throw bad_cast();
@@ -2630,7 +2659,7 @@ public:
         }
     }
 
-    inline explicit operator long() const {
+    inline operator long() const {
         switch (Type) {
             default:
                 throw bad_cast();
@@ -2668,7 +2697,7 @@ public:
         }
     }
 
-    inline explicit operator float() const {
+    inline operator float() const {
         switch (Type) {
             default:
                 throw bad_cast();
@@ -2687,7 +2716,7 @@ public:
         }
     }
 
-    inline explicit operator double() const {
+    inline operator double() const {
         switch (Type) {
             default:
                 throw bad_cast();
@@ -2735,6 +2764,5 @@ public:
     }
 
 };
-
 
 #pragma clang diagnostic pop

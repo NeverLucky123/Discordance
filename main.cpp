@@ -3,12 +3,14 @@
 #include <chrono>
 using namespace chrono;
 int main() {
-    DisVar x{3}, y{2},z{5};
+    DisVar x{3}, y{2},z{5}, h{"asfgewsdc"};
     auto c=3/2;
     x/=y;
-    cout<<x.value()<<endl;
+    cout<<h.length()<<endl;
    // cout<<y.value()<<endl;
-
+    cout<<x<<endl;
+    cin>>x;
+    cout<<x<<endl;
     if(z>x){
         cout<<"hello";
     }
