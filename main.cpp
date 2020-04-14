@@ -1,19 +1,14 @@
 #include "DisVar.h"
+#include "DisVector.h"
 #include <iostream>
-#include <chrono>
-using namespace chrono;
 int main() {
-    DisVar x{3}, y{2},z{5}, h{"asfgewsdc"};
-    auto c=3/2;
-    x/=y;
-    cout<<h.length()<<endl;
-   // cout<<y.value()<<endl;
-    cout<<x<<endl;
-    cin>>x;
-    cout<<x<<endl;
-    if(z>x){
-        cout<<"hello";
-    }
+    int x=0;
+
+if
+(x==0)
+{
+
+}
 /*
     cout<<sizeof(z)<<endl;
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
