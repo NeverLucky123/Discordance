@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <array>
+#include <deque>
 namespace discordance{
     template<typename t>
     class vector : public std::vector<t> {
@@ -39,18 +39,30 @@ namespace discordance{
             return dst;
         }
     };
-    template<typename t, size_t l>
-    class array : public std::array<t,l> {
+
+    template<typename t>
+    class deque : public std::deque<t> {
+        using std::deque<t>::deque;
     public:
-        template<typename s, size_t e>
-        inline array &operator=(array<s, e> a) {
+        template<typename s>
+        inline deque<t> &operator=(deque<s> a) {
             for (int i = 0; i < a.size(); i++) {
                 this->at(i) = a[i];
             }
         };
-        template<typename s, size_t e>
-        inline operator array<s,e>() {
-            array<s,e> x;
+
+        template<typename s>
+        inline operator vector<s>() {
+            deque <s> x;
+            x.resize(this->size());
+            for (int i = 0; i < this->size(); i++) {
+                x[i] = (s) this->at(i);
+            }
+            return x;
+        }
+        template<typename s>
+        inline operator deque<s>(){
+            deque <s> x;
             x.resize(this->size());
             for (int i = 0; i < this->size(); i++) {
                 x[i] = (s) this->at(i);
@@ -65,19 +77,13 @@ namespace discordance{
                 first=this->size()+first;
             }
             if(first<0||last<0){
-                throw std::out_of_range("vector is not that long");
+                throw std::invalid_argument("index out of range");
             } else if(last<first){
-                throw std::out_of_range("last arguement before first arguement: slice invalid");
+                throw std::invalid_argument("last arguement before first arguement: slice invalid");
             }
-            discordance::vector<t> x(last-first);
-            std::copy(this->begin()+first, this->begin()+last, x.begin());
-            return x;
+            discordance::deque<t> dst(last-first);
+            std::copy(this->begin()+first, this->begin()+last, dst.begin());
+            return dst;
         }
-        inline operator vector<t>(){
-            vector<t> x(this->size());
-            std::copy(this->begin(), this->end(), x.begin());
-            return x;
-        }
-
     };
 }

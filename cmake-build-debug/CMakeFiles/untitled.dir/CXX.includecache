@@ -15,7 +15,7 @@ iostream
 C:/Users/henry/CLionProjects/untitled/Discordance/DisVector.h
 vector
 -
-array
+deque
 -
 
 C:/Users/henry/CLionProjects/untitled/Discordance/main.cpp
