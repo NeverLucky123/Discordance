@@ -1,11 +1,94 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
-#pragma ide diagnostic ignored "bugprone-narrowing-conversions"
 #pragma once
-#pragma auto_inline (on)
-
 #include <string>
 #include <iostream>
+#include <vector>
+#include <deque>
+namespace discordance{
+    template<typename t>
+    class vector : public std::vector<t> {
+        using std::vector<t>::vector;
+    public:
+        template<typename s>
+        inline vector<t> &operator=(vector<s> a) {
+            for (int i = 0; i < a.size(); i++) {
+                this->at(i) = a[i];
+            }
+        };
+
+        template<typename s>
+        inline operator vector<s>() {
+            vector <s> x;
+            x.resize(this->size());
+            for (int i = 0; i < this->size(); i++) {
+                x[i] = (s) this->at(i);
+            }
+            return x;
+        }
+        discordance::vector<t> slice(int first, int last){
+            if(last<0){
+                last=this->size()+last;
+            }
+            if(first<0){
+                first=this->size()+first;
+            }
+            if(first<0||last<0){
+                throw std::invalid_argument("index out of range");
+            } else if(last<first){
+                throw std::invalid_argument("last arguement before first arguement: slice invalid");
+            }
+            discordance::vector<t> dst(last-first);
+            std::copy(this->begin()+first, this->begin()+last, dst.begin());
+            return dst;
+        }
+    };
+
+    template<typename t>
+    class deque : public std::deque<t> {
+        using std::deque<t>::deque;
+    public:
+        template<typename s>
+        inline deque<t> &operator=(deque<s> a) {
+            for (int i = 0; i < a.size(); i++) {
+                this->at(i) = a[i];
+            }
+        };
+
+        template<typename s>
+        inline operator vector<s>() {
+            deque <s> x;
+            x.resize(this->size());
+            for (int i = 0; i < this->size(); i++) {
+                x[i] = (s) this->at(i);
+            }
+            return x;
+        }
+        template<typename s>
+        inline operator deque<s>(){
+            deque <s> x;
+            x.resize(this->size());
+            for (int i = 0; i < this->size(); i++) {
+                x[i] = (s) this->at(i);
+            }
+            return x;
+        }
+        discordance::vector<t> slice(int first, int last){
+            if(last<0){
+                last=this->size()+last;
+            }
+            if(first<0){
+                first=this->size()+first;
+            }
+            if(first<0||last<0){
+                throw std::invalid_argument("index out of range");
+            } else if(last<first){
+                throw std::invalid_argument("last arguement before first arguement: slice invalid");
+            }
+            discordance::deque<t> dst(last-first);
+            std::copy(this->begin()+first, this->begin()+last, dst.begin());
+            return dst;
+        }
+    };
+}
 
 namespace discordance {
     class var {
@@ -2861,7 +2944,7 @@ namespace discordance {
         }
 
         //implicit casting operators
-        inline explicit operator short() const {
+        inline operator short() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -2880,7 +2963,7 @@ namespace discordance {
             }
         }
 
-        inline explicit operator bool() const {
+        inline operator bool() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -2918,7 +3001,7 @@ namespace discordance {
             }
         }
 
-        inline explicit operator long() const {
+        inline operator long() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -2937,7 +3020,7 @@ namespace discordance {
             }
         }
 
-        inline explicit operator long long() const {
+        inline operator long long() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -2956,7 +3039,7 @@ namespace discordance {
             }
         }
 
-        inline explicit operator float() const {
+        inline operator float() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -2994,7 +3077,7 @@ namespace discordance {
             }
         }
 
-        inline explicit operator long double() const {
+        inline operator long double() const {
             switch (Type) {
                 default:
                     throw std::bad_cast();
@@ -3022,7 +3105,7 @@ namespace discordance {
                     return *reinterpret_cast<std::string *>(val);
             }
         }
-        
+
         friend std::string operator+(const char *a, const var& b){
             std::string b_string=b;
             std::string a_string=a;
@@ -3065,88 +3148,5 @@ namespace discordance {
         friend t operator/(const var&a, t b){
             return t(a)/b;
         }
-        template<typename t>
-        friend t operator%(t a, const var& b){
-            return a%t(b);
-        }
-        template<typename t>
-        friend t operator%(const var&a, t b){
-            return t(a)%b;
-        }
-        template<typename t>
-        friend t operator<(t a, const var& b){
-            return a<t(b);
-        }
-        template<typename t>
-        friend t operator<(const var&a, t b){
-            return t(a)<b;
-        }
-        template<typename t>
-        friend t operator>(t a, const var& b){
-            return a>t(b);
-        }
-        template<typename t>
-        friend t operator>(const var&a, t b){
-            return t(a)>b;
-        }
-        template<typename t>
-        friend t operator<=(t a, const var& b){
-            return a<=t(b);
-        }
-        template<typename t>
-        friend t operator<=(const var&a, t b){
-            return t(a)<=b;
-        }
-        template<typename t>
-        friend t operator>=(t a, const var& b){
-            return a>=t(b);
-        }
-        template<typename t>
-        friend t operator>=(const var&a, t b){
-            return t(a)>=b;
-        }
-        template<typename t>
-        friend t operator==(t a, const var& b){
-            return a==t(b);
-        }
-        template<typename t>
-        friend t operator==(const var&a, t b){
-            return t(a)==b;
-        }
-        template<typename t>
-        friend t operator&&(t a, const var& b){
-            return a&&t(b);
-        }
-        template<typename t>
-        friend t operator&&(const var&a, t b){
-            return t(a)&&b;
-        }
-        template<typename t>
-        friend t operator||(t a, const var& b){
-            return a||t(b);
-        }
-        template<typename t>
-        friend t operator||(const var&a, t b){
-            return t(a)||b;
-        }
-        friend var operator-(const var&a){
-            switch (a.Type) {
-                default:
-                    throw std::bad_cast();
-                case Bool:
-                    return -*reinterpret_cast<bool *>(a.val);
-                case Integer:
-                    return -*reinterpret_cast<int *>(a.val);
-                case Long:
-                    return -*reinterpret_cast<long *>(a.val);
-                case LL:
-                    return -*reinterpret_cast<long long *>(a.val);
-                case Double:
-                    return -*reinterpret_cast<double *>(a.val);
-                case LD:
-                    return -*reinterpret_cast<long double *>(a.val);
-            }
-        }
     };
 }
-#pragma clang diagnostic pop

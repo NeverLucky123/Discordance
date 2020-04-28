@@ -23,8 +23,6 @@ DisVar.h
 C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h
 DisVector.h
 C:/Users/henry/CLionProjects/untitled/Discordance/DisVector.h
-iostream
--
-chrono
+cmath
 -
 
