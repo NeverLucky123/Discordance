@@ -80,12 +80,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h">
-			<Option target="untitled"/>
-		</Unit>
-		<Unit filename="C:/Users/henry/CLionProjects/untitled/Discordance/DisVector.h">
-			<Option target="untitled"/>
-		</Unit>
 		<Unit filename="C:/Users/henry/CLionProjects/untitled/Discordance/Discordance.h">
 			<Option target="untitled"/>
 		</Unit>

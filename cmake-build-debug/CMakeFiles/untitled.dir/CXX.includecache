@@ -6,23 +6,21 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h
+C:/Users/henry/CLionProjects/untitled/Discordance/Discordance.h
 string
 -
 iostream
 -
-
-C:/Users/henry/CLionProjects/untitled/Discordance/DisVector.h
 vector
 -
 deque
 -
 
 C:/Users/henry/CLionProjects/untitled/Discordance/main.cpp
-DisVar.h
-C:/Users/henry/CLionProjects/untitled/Discordance/DisVar.h
-DisVector.h
-C:/Users/henry/CLionProjects/untitled/Discordance/DisVector.h
+Discordance.h
+C:/Users/henry/CLionProjects/untitled/Discordance/Discordance.h
 cmath
+-
+cstring
 -
 

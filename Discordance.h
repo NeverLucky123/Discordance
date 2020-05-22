@@ -8,12 +8,6 @@ namespace discordance{
     class vector : public std::vector<t> {
         using std::vector<t>::vector;
     public:
-        template<typename s>
-        inline vector<t> &operator=(vector<s> a) {
-            for (int i = 0; i < a.size(); i++) {
-                this->at(i) = a[i];
-            }
-        };
 
         template<typename s>
         inline operator vector<s>() {
@@ -47,14 +41,7 @@ namespace discordance{
         using std::deque<t>::deque;
     public:
         template<typename s>
-        inline deque<t> &operator=(deque<s> a) {
-            for (int i = 0; i < a.size(); i++) {
-                this->at(i) = a[i];
-            }
-        };
-
-        template<typename s>
-        inline operator vector<s>() {
+        inline operator deque<s>() {
             deque <s> x;
             x.resize(this->size());
             for (int i = 0; i < this->size(); i++) {
@@ -63,8 +50,8 @@ namespace discordance{
             return x;
         }
         template<typename s>
-        inline operator deque<s>(){
-            deque <s> x;
+        inline operator vector<s>() {
+            vector <s> x;
             x.resize(this->size());
             for (int i = 0; i < this->size(); i++) {
                 x[i] = (s) this->at(i);
@@ -83,7 +70,7 @@ namespace discordance{
             } else if(last<first){
                 throw std::invalid_argument("last arguement before first arguement: slice invalid");
             }
-            discordance::deque<t> dst(last-first);
+            discordance::vector<t> dst(last-first);
             std::copy(this->begin()+first, this->begin()+last, dst.begin());
             return dst;
         }
@@ -2902,6 +2889,7 @@ namespace discordance {
                 case String:
                     return output << *reinterpret_cast<std::string *>(x.val);
                 case Untype:
+                default:
                     return output << "Untype";
             }
         }
@@ -3147,6 +3135,80 @@ namespace discordance {
         template<typename t>
         friend t operator/(const var&a, t b){
             return t(a)/b;
+        }
+        template<typename t>
+        friend t operator%(t a, const var& b){
+            return a%t(b);
+        }
+        template<typename t>
+        friend t operator%(const var&a, t b){
+            return t(a)%b;
+        }
+        template<typename t>
+        friend t operator>(t a, const var& b){
+            return a>t(b);
+        }
+        template<typename t>
+        friend t operator>(const var&a, t b){
+            return t(a)>b;
+        }
+        template<typename t>
+        friend t operator<(t a, const var& b){
+            return a<t(b);
+        }
+        template<typename t>
+        friend t operator<(const var&a, t b){
+            return t(a)<b;
+        }
+        template<typename t>
+        friend t operator>=(t a, const var& b){
+            return a>=t(b);
+        }
+        template<typename t>
+        friend t operator>=(const var&a, t b){
+            return t(a)>=b;
+        }
+        template<typename t>
+        friend t operator<=(t a, const var& b){
+            return a<=t(b);
+        }
+        template<typename t>
+        friend t operator<=(const var&a, t b){
+            return t(a)<=b;
+        }
+        friend bool operator==(const char *a, const var& b){
+            std::string a_string=a;
+            std::string b_string=b;
+            return a_string==b_string;
+        }
+        friend bool operator==(const var& a, const char *b){
+            std::string b_string=b;
+            std::string a_string=a;
+            return a_string==b_string;
+        }
+        template<typename t>
+        friend t operator==(t a, const var& b) {
+            return a == t(b);
+        }
+        template<typename t>
+        friend t operator==(const var&a, t b){
+            return t(a)==b;
+        }
+        template<typename t>
+        friend t operator&&(t a, const var& b){
+            return a&&t(b);
+        }
+        template<typename t>
+        friend t operator&&(const var&a, t b){
+            return t(a)&&b;
+        }
+        template<typename t>
+        friend t operator||(t a, const var& b){
+            return a||t(b);
+        }
+        template<typename t>
+        friend t operator||(const var&a, t b){
+            return t(a)||b;
         }
     };
 }

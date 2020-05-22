@@ -3,4 +3,4 @@ project(untitled)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(untitled DisVar.h DisVector.h main.cpp Discordance.h)
+add_executable(untitled main.cpp Discordance.h)
